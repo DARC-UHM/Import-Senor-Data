@@ -7,7 +7,7 @@ This repository contains scripts that prepare ROV sensor data for input into VAR
 The script to process data from the Nautilus is called `na_ctd_processor.sh`. This is a bash script that takes a cruise number as an argument, e.g.:
 
 ```bash
-na_ctd_processor.sh NA138
+./na_ctd_processor.sh NA138
 ```
 
 Before running this script, file paths must be specified on lines 10-12 of the script:
@@ -34,7 +34,7 @@ Finally, the script deletes the temporary directory.
 The script to process data from the Okeanos Explorer is called `ex_ctd_processor.sh`. Like the NA script, this is a bash script that takes a cruise number as an argument, e.g.:
 
 ```bash
-ex_ctd_processor.sh EX2306
+./ex_ctd_processor.sh EX2306
 ```
 
 Before running this script, file paths must be specified on lines 7-9 of the script:
