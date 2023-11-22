@@ -56,7 +56,7 @@ Finally, the script deletes the temporary directory.
 ## Notes
 
 - The scripts are currently set up to run on a Mac. They may need to be modified to run on a PC.
-- If the folder structure, file names, or columns in the data files change, the scripts will need to be updated accordingly
+- If the folder structure, file names, or columns in the data files change, the scripts will need to be updated accordingly.
 - EX `ROVCTD_DERIVE.cnv` files currently use an interesting timestamp: the first column is the number of seconds since 2000-01-01 00:00:00Z. This is converted to a standard timestamp in the R script.
 
 [//]: # (TODO add notes about expected file structure, file names, and column names)
