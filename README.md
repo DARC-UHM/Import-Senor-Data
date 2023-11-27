@@ -56,7 +56,117 @@ Finally, the script deletes the temporary directory.
 ## Notes
 
 - The scripts are currently set up to run on a Mac. They may need to be modified to run on a PC.
-- If the folder structure, file names, or columns in the data files change, the scripts will need to be updated accordingly.
 - EX `ROVCTD_DERIVE.cnv` files currently use an interesting timestamp: the first column is the number of seconds since 2000-01-01 00:00:00Z. This is converted to a standard timestamp in the R script.
+- If the folder structure, file names, or columns in the data files change, the scripts will need to be updated accordingly.
 
-[//]: # (TODO add notes about expected file structure, file names, and column names)
+### NA Expected Values
+
+#### Folder structure
+
+```bash
+.
+└── ${CRUISE_NUMBER}/
+    ├── processed/
+    │   └── dive_reports/
+    │       ├── ${DIVE_NUMBER_1}/
+    │       │   └── merged/
+    │       │       ├── ${DIVE_NUMBER_1}.CTD.NAV.tsv
+    │       │       ├── ${DIVE_NUMBER_1}.O2S.NAV.tsv
+    │       │       └── ...
+    │       ├── ${DIVE_NUMBER_2}/
+    │       │   └── merged/
+    │       │       ├── ${DIVE_NUMBER_2}.CTD.NAV.tsv
+    │       │       ├── ${DIVE_NUMBER_2}.O2S.NAV.tsv
+    │       │       └── ...
+    │       └── ...
+    └── raw/
+        └── nav/
+            └── navest/
+                ├── YYYYMMDD_HHMM.DAT
+                ├── YYYYMMDD_HHMM.DAT
+                ├── YYYYMMDD_HHMM.DAT
+                └── ...
+```
+
+#### File names
+
+**CTD Files (Lat, Long, Depth, Temperature, Salinity)**
+
+Format: `${DIVE_NUMBER}.CTD.NAV.tsv` 
+
+Example: `H1915.CTD.NAV.tsv`
+
+**O2 Files (Oxygen)**
+
+Format: `${DIVE_NUMBER}.O2S.NAV.tsv`
+
+Example: `H1915.O2S.NAV.tsv`
+
+**DAT Files (Altitude)**
+
+Format: `YYYYMMDD_HHMM.DAT`
+
+Example: `20220407_0600.DAT`
+
+#### Column order
+`X` indicates a column that is not used.
+
+**CTD.NAV.tsv**
+```
+Timestamp, Latitude, Longitude, Depth, Temperature, X1, X2, Salinity, X3
+```
+
+**O2S.NAV.tsv**
+```
+Timestamp, X1, X2, X3, Oxygen, X4, X5
+```
+
+**.DAT** (Looks for keywords VFR and SOLN_DEADRECK)
+```
+VFR 2022/04/17 18:00:02.615 13 0 SOLN_DEADRECK -174.606671 30.693783 0.000 2.330 100 0.16 59.80 
+```
+
+
+### EX Expected Values
+
+#### Folder structure
+
+```bash
+.
+└── ${CRUISE_NUMBER}/
+    ├── CTD/
+    │   ├── ${DIVE_NUMBER_1}_ROVCTD_DERIVE.cnv
+    │   ├── ${DIVE_NUMBER_2}_ROVCTD_DERIVE.cnv
+    │   └── ...
+    └── Tracking/
+        ├── ${DIVE_NUMBER_1}_RovTrack1Hz.csv
+        ├── ${DIVE_NUMBER_2}_RovTrack1Hz.csv
+        └── ...
+```
+
+#### File names
+
+**CTD Files (Temperature, Depth, Salinity, Oxygen)**
+
+Format: `${CRUISE_NUMBER}_${DIVE_NUMBER}_${any other descriptors}.cnv`
+
+Example: `EX2306_DIVE01_20230824_ROVCTD_DERIVE.cnv`
+
+**Tracking Files (Lat, Long, Altitude)**
+
+Format: `${CRUISE_NUMBER}_${DIVE_NUMBER}_${any other descriptors}.csv`
+
+Example: `EX2306_DIVE01_RovTrack1Hz.csv`
+
+#### Column order
+`X` indicates a column that is not used.
+
+**CTD**
+```
+Timestamp, X1, X2, Temperature, X3, X4, X5, X6, X7, Depth, Salinity, X8, OxygenMg/L, X9, X10, X11
+```
+
+**Tracking**
+```
+Date, Time, Unix Time, Depth, Altitude, Lat, Long
+```
