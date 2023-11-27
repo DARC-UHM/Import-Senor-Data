@@ -121,7 +121,15 @@ Timestamp, Latitude, Longitude, Depth, Temperature, X1, X2, Salinity, X3
 Timestamp, X1, X2, X3, Oxygen, X4, X5
 ```
 
-**.DAT** (Looks for keywords VFR and SOLN_DEADRECK)
+**.DAT**
+
+Searches text file for lines with keywords `VFR` and `SOLN_DEADRECK`
+
+Format:
+```
+VFR   [DATE]      [TIME]    X  X SOLN_DEADRECK      X         X        X   [ALT]  X   X    X
+```
+Example:
 ```
 VFR 2022/04/17 18:00:02.615 13 0 SOLN_DEADRECK -174.606671 30.693783 0.000 2.330 100 0.16 59.80 
 ```
