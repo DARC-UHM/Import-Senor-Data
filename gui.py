@@ -1,3 +1,4 @@
+import math
 import tkinter as tk
 import subprocess
 
@@ -7,35 +8,63 @@ from tkinter import filedialog, ttk
 class Gui(tk.Tk):
     def __init__(self):
         super().__init__()
+        self.title('CTD Process')
+        self.minsize(350, 400)
+
         self.cruise_number = tk.StringVar(value='')
         self.cruise_preset = tk.StringVar(value='EX')
         self.source_folder = tk.StringVar(value='/Volumes/maxarray2/varsadditional')
         self.output_folder = tk.StringVar(value='/Volumes/maxarray2/varsadditional')
-        self.title('CTD Process')
-        self.minsize(350, 400)
+
+        self.button_text = tk.StringVar(value='GO')
+        self.processing_text = tk.StringVar(value='')
+        self.background = tk.Frame(master=self)
+        self.canvas = tk.Canvas(master=self.background, width=50, height=50)
+        self.processing = False
+
         self.initialize_widgets()
 
-    def go_button_callback(self):
+    def go_button_callback(self, go_button):
         cruise_number = self.cruise_number.get()
         source_folder = self.source_folder.get()
         output_folder = self.output_folder.get()
-        result = {'returncode': -1}
+        process = None
         if self.cruise_preset.get() == 'EX':
-            result = subprocess.run([
+            process = subprocess.Popen([
                 'EX/ex_ctd_processor.sh',
                 cruise_number,
                 source_folder,
                 output_folder,
             ])
         elif self.cruise_preset.get() == 'NA':
-            result = subprocess.run([
+            process = subprocess.Popen([
                 'NA/na_ctd_processor.sh',
                 cruise_number,
                 source_folder,
                 f'{source_folder}/processed/dive_reports',
                 output_folder,
             ])
-        print('Success' if result['returncode'] == 0 else 'Failed')
+        self.button_text.set('CANCEL')
+        go_button.config(command=lambda: self.stop_button_callback(process, go_button))
+        self.processing_text.set('Processing... see details in terminal')
+        self.processing = True
+        self.update_spinner(0)
+        self.check_process(process)
+
+    def stop_button_callback(self, process, go_button):
+        process.terminate()
+        self.processing = False
+        self.button_text.set('GO')
+        go_button.config(command=lambda: self.go_button_callback(go_button))
+        self.processing_text.set('Cancelled')
+
+    def check_process(self, process):
+        if process.poll() is None:
+            self.after(1000, self.check_process, process)
+        else:
+            self.processing = False
+            self.button_text.set('GO')
+            self.processing_text.set('Cancelled' if self.processing_text.get() == 'Cancelled' else 'Complete!')
 
     def update_preset(self, preset):
         self.cruise_preset.set(preset)
@@ -44,8 +73,17 @@ class Gui(tk.Tk):
         file_path = filedialog.askdirectory(initialdir='/Volumes/maxarray2/varsadditional', title='Select a folder')
         path.set(file_path)
 
+    def update_spinner(self, angle):
+        self.canvas.delete('spinner')
+        if not self.processing:
+            return
+        x = 25 + 10 * math.cos(angle)
+        y = 25 + 10 * math.sin(angle)
+        self.canvas.create_oval(x - 5, y - 5, x + 5, y + 5, fill='black', tags='spinner')
+        self.after(30, self.update_spinner, angle + 0.1)
+
     def initialize_widgets(self):
-        background = tk.Frame(master=self)
+        background = self.background
 
         # cruise and preset frame
         cruise_preset_frame = tk.Frame(master=background)
@@ -102,14 +140,21 @@ class Gui(tk.Tk):
             font=('Helvetica', '13', 'bold'),
         )
 
+        # processing status
+        processing_status_label = tk.Label(
+            master=self.background,
+            textvariable=self.processing_text,
+            font=('Helvetica', '12'),
+        )
+
         # go button
         go_button = tk.Button(
             master=background,
-            text='GO',
+            textvariable=self.button_text,
             width=20,
             height=2,
             font=('Helvetica', '13', 'bold'),
-            command=self.go_button_callback,
+            command=lambda: self.go_button_callback(go_button),
         )
 
         # packin
@@ -133,7 +178,9 @@ class Gui(tk.Tk):
         output_directory_entry.pack(anchor='w')
         output_directory_browse_button.pack(anchor='w')
 
-        go_button.pack(pady=(20, 30))
+        go_button.pack(pady=(20, 5))
+        processing_status_label.pack(pady=(0, 10))
+        self.canvas.pack()
 
         background.pack(padx=30, pady=20)
 

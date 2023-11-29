@@ -129,3 +129,5 @@ printf "$txt_success\nCruise complete!\n$txt_reset"
 printf "\nMerged csv files saved to ${txt_underline}${output_destination_path}${txt_reset}\n\n"
 
 open "$output_destination_path"
+
+exit 0
