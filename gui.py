@@ -1,4 +1,5 @@
 import tkinter as tk
+import subprocess
 
 from tkinter import filedialog, ttk
 
@@ -7,7 +8,7 @@ class Gui(tk.Tk):
     def __init__(self):
         super().__init__()
         self.cruise_number = tk.StringVar(value='')
-        self.preset = tk.StringVar(value='EX')
+        self.cruise_preset = tk.StringVar(value='EX')
         self.source_folder = tk.StringVar(value='/Volumes/maxarray2/varsadditional')
         self.output_folder = tk.StringVar(value='/Volumes/maxarray2/varsadditional')
         self.title('CTD Process')
@@ -15,13 +16,29 @@ class Gui(tk.Tk):
         self.initialize_widgets()
 
     def go_button_callback(self):
-        print('cruise number: {}'.format(self.cruise_number.get()))
-        print('preset: {}'.format(self.preset.get()))
-        print('source folder: {}'.format(self.source_folder.get()))
-        print('output folder: {}'.format(self.output_folder.get()))
+        cruise_number = self.cruise_number.get()
+        source_folder = self.source_folder.get()
+        output_folder = self.output_folder.get()
+        result = {'returncode': -1}
+        if self.cruise_preset.get() == 'EX':
+            result = subprocess.run([
+                'EX/ex_ctd_processor.sh',
+                cruise_number,
+                source_folder,
+                output_folder,
+            ])
+        elif self.cruise_preset.get() == 'NA':
+            result = subprocess.run([
+                'NA/na_ctd_processor.sh',
+                cruise_number,
+                source_folder,
+                f'{source_folder}/processed/dive_reports',
+                output_folder,
+            ])
+        print('Success' if result['returncode'] == 0 else 'Failed')
 
     def update_preset(self, preset):
-        self.preset.set(preset)
+        self.cruise_preset.set(preset)
 
     def get_file_path(self, path):
         file_path = filedialog.askdirectory(initialdir='/Volumes/maxarray2/varsadditional', title='Select a folder')

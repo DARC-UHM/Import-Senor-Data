@@ -1,12 +1,13 @@
 #!/bin/bash
 #set -x # for debugging
 
-# Takes in Cruise Number as an input
-cruise_number=$1
+# usage:
+# ./ex_ctd_processor.sh <cruise_number> <cruise_source_path> <output_destination_path>
 
-### CONFIGURATION ###
-cruise_source_path="/Users/darc/Desktop/$cruise_number"
-output_destination_path="/Users/darc/Desktop/test"
+# inputs
+cruise_number=$1
+cruise_source_path=$2
+output_destination_path=$3
 
 # IF COLUMNS IN CTD CNV FILE CHANGE, UPDATE IN EX.R (line 28)
 #
@@ -54,6 +55,7 @@ export txt_reset=$(tput sgr0)
 today=$(date +%Y%m%d)
 tmp_output_destination="$output_destination_path/$cruise_number/$today/tmp"
 mkdir -p "$tmp_output_destination"
+cd "EX"
 
 # Given a cruise number, identify the number of dives in the cruise
 dive_count=`(ls "$cruise_source_path/CTD" | grep .cnv | wc -l | tr -d " ")`

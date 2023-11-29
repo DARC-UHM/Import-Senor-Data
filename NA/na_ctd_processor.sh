@@ -3,13 +3,14 @@
 
 # brew install ag (ag is the_silver_searcher, faster than grep)
 
-# Takes in Cruise Number as an input
-cruise_number=$1
+# usage:
+# ./na_ctd_processor.sh <cruise_number> <cruise_source_path> <dive_reports_source> <output_destination_path>
 
-### CONFIGURATION ###
-cruise_source_path="/Users/darc/Desktop/$cruise_number"
-dive_reports_source="/Users/darc/Desktop/$cruise_number/processed/dive_reports"
-output_destination_path="/Users/darc/Desktop/test"
+# inputs
+cruise_number=$1
+cruise_source_path=$2
+dive_reports_source=$3
+output_destination_path=$4
 
 # load pretty colors
 export txt_bold=$(tput bold)
@@ -24,7 +25,7 @@ export txt_reset=$(tput sgr0)
 today=$(date +%Y%m%d)
 tmp_output_destination="$output_destination_path/$cruise_number/$today/tmp"
 mkdir -p "$tmp_output_destination"
-
+cd "NA"
 
 ## Given a Cruise Number, identify the number of dives in the cruise
 dive_count=`(ls "$dive_reports_source" | grep -e "^H" | wc -l | tr -d " ")`
