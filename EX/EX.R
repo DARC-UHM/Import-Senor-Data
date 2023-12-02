@@ -27,7 +27,7 @@ read_ctd_data <- function() {
 
   # these can can be changed as needed to match the column names in the CTD file
   column_names <- c("Timestamp", "prDM", "prDE", "Temperature", "c0S/m", "seaTurbMtr", "sbeox0V", "upoly0",
-                    "modError", "Depth", "Salinity", "svCM", "sbeox0Mg/L", "Oxygen.Mg.L", "sbox0Mm/Kg", "flag")
+                    "modError", "Depth", "Salinity", "svCM", "sbeox0Mg/L", "Oxygen.ML.L", "sbox0Mm/Kg", "flag")
 
   file_conn <- file(ctd_file, open="r")
   line_count <- 0
@@ -52,7 +52,7 @@ read_ctd_data <- function() {
   pruned_seconds$Datetime <- format(pruned_seconds$datetime_converted, "%Y%m%dT%H%M%SZ")
 
   # Select the relevant columns
-  relevant_data <- pruned_seconds[, c("Datetime", "Temperature", "Depth", "Salinity", "Oxygen.Mg.L")]
+  relevant_data <- pruned_seconds[, c("Datetime", "Temperature", "Depth", "Salinity", "Oxygen.ML.L")]
 
   return(as_tibble(relevant_data))
 }
@@ -74,7 +74,7 @@ read_nav_data <- function() {
   nav_data$Datetime <- format(nav_data$UNIXTIME, "%Y%m%dT%H%M%SZ") # convert timestamp
 
   # Select only the rows that don't have NA for Alt, Lat, and Long
-  nav_data <- nav_data[complete.cases(nav_data[, c("Alt", "Lat", "Long")]), ]
+  nav_data <- nav_data[complete.cases(nav_data[, c("Lat", "Long")]), ]
 
   # Select the relevant columns
   relevant_data <- nav_data[, c("Datetime", "Alt", "Lat", "Long")]
@@ -88,8 +88,8 @@ merged_data <- inner_join(read_ctd_data(), read_nav_data(), by="Datetime")
 file_name <- paste0(cruise_number, "_", dive_number, "_", dive_start_date, "_ROVDATA.csv")
 output_file_path <- paste0(output_destination_path, "/", file_name)
 
-selected_columns <- c("Lat", "Long", "Depth", "Temperature", "Oxygen.Mg.L", "Salinity", "Datetime", "Alt")  # Specify the columns you want to select
-new_header_names <- c('Latitude','Longitude','Depth','Temperature','oxygen_mg_per_l', 'Salinity','Date','Alt')  # Specify the new header names
+selected_columns <- c("Lat", "Long", "Depth", "Temperature", "Oxygen.ML.L", "Salinity", "Datetime", "Alt")  # Specify the columns you want to select
+new_header_names <- c('Latitude','Longitude','Depth','Temperature','oxygen_ml_per_l', 'Salinity','Date','Alt')  # Specify the new header names
 
 # Subset the tibble to select the desired columns
 selected_data <- merged_data[, selected_columns]
