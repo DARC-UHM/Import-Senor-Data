@@ -1,25 +1,30 @@
 # Overview 
 
-This repository contains scripts that prepare ROV sensor data for input into VARS. There are currently two scripts, one for data from Deep Discoverer (Nautilus, NA) and one for data from Hercules, (Okeanos Explorer, EX).
+This repository contains scripts that prepare ROV sensor data for input into VARS. There are currently two scripts, one for data from Deep Discoverer (Nautilus, NA) and one for data from Hercules, (Okeanos Explorer, EX). The scripts can be run from the command line or through a simple GUI.
+
+## GUI
+
+To use the GUI, navigate to the root of the repository and run the command `python3 gui.py`. The following window will appear:
+
+<p align="center">
+    <img src="screenshot-gui.png" alt="GUI" width="500">
+</p>
+
+The GUI has three inputs: cruise number, base directory, and output directory. The cruise number is the cruise number of the cruise to be processed, e.g. `NA138` or `EX2306`. The base directory is the path to the directory containing the cruise directory, e.g. `/Volumes/maxarray2/varsadditional/OER2023/EX2306`. The output directory is the path to the directory where the processed data will be saved, e.g. `/Users/darc/Desktop/test`.
+
+_Note_ - The GUI assumes that:
+- Nautilus cruise directories contain a `processed` directory with a `dive_reports` directory inside it
+- Okeanos Explorer cruise directories contain `CTD` and `Tracking` directories
 
 ## Nautilus
 
-The script to process data from the Nautilus is called `na_ctd_processor.sh`. This is a bash script that takes a cruise number as an argument, e.g.:
+The script to process data from the Nautilus is called `na_ctd_processor.sh`. This is a bash script that takes a cruise number, a source path, a `dive_reports` path, and a destination path as arguments:
 
 ```bash
-./na_ctd_processor.sh NA138
+./na_ctd_processor.sh <cruise_number> <cruise_source_path> <dive_reports_source> <output_destination_path>
 ```
 
-Before running this script, file paths must be specified on lines 10-12 of the script:
-
-```bash
-### CONFIGURATION ###
-cruise_source_path="/Volumes/maxarray2/varsadditional/$cruise_number"
-dive_reports_source="/Volumes/maxarray2/varsadditional/$cruise_number/processed/dive_reports"
-output_destination_path="/Users/darc/Desktop/test"
-```
-
-`$cruise_number` is the cruise number passed as an argument to the script, so this does not need to be manually changed. The `cruise_source_path` is the path to the cruise directory on the server. The `dive_reports_source` is the path to the `dive_reports` directory on the server (defined separately in case the location of the `dive_reports` folder changes in the future). The `output_destination_path` is the path to the directory where the processed data will be saved.
+The `cruise_source_path` is the path to the cruise directory on the server. The `dive_reports_source` is the path to the `dive_reports` directory on the server (defined separately in case the location of the `dive_reports` folder changes in the future). The `output_destination_path` is the path to the directory where the processed data will be saved.
 
 The script starts by finding a list of all the dives in the cruise. For each dive, it copies the relevant data files to a temporary directory at the output destination path. These include `.CTD.NAV.tsv` files (lat/long, depth, temperature, and salinity) and `.O2S.NAV.tsv` files (oxygen).
 
@@ -31,21 +36,13 @@ Finally, the script deletes the temporary directory.
 
 ## Okeanos Explorer
 
-The script to process data from the Okeanos Explorer is called `ex_ctd_processor.sh`. Like the NA script, this is a bash script that takes a cruise number as an argument, e.g.:
+The script to process data from the Okeanos Explorer is called `ex_ctd_processor.sh`. Similar to the NA script, this is a bash script that takes a cruise number, a source path, and a destination path as arguments:
 
 ```bash
-./ex_ctd_processor.sh EX2306
+./ex_ctd_processor.sh <cruise_number> <cruise_source_path> <output_destination_path>
 ```
 
-Before running this script, file paths must be specified on lines 7-9 of the script:
-
-```bash
-### CONFIGURATION ###
-cruise_source_path="/Volumes/maxarray2/varsadditional/OER2023/$cruise_number"
-output_destination_path="/Users/darc/Desktop/test"
-```
-
-`$cruise_number` is the cruise number passed as an argument to the script, so this does not need to be manually changed. The `cruise_source_path` is the path to the cruise directory on the server. The `output_destination_path` is the path to the directory where the processed data will be saved. Unlike the NA script, there is no need to specify a path to the `dive_reports` directory. The script expects two directories in the cruise directory: `CTD` and `Tracking`.
+The `cruise_source_path` is the path to the cruise directory on the server. The `output_destination_path` is the path to the directory where the processed data will be saved. Unlike the NA script, there is no need to specify a path to the `dive_reports` directory. The script expects two directories in the cruise directory: `CTD` and `Tracking`.
 
 Similar to the NA script, the script starts by finding a list of all the dives in the cruise. For each dive, it copies the relevant data files to a temporary directory at the output destination path. For NA, these include `ROVCTD_DERIVE.cnv` files (depth, temperature, oxygen, and salinity) and `RovTrack1Hz.csv` files (lat/long and altitude).
 
