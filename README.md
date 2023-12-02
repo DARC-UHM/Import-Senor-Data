@@ -173,5 +173,5 @@ Timestamp, X1, X2, Temperature, X3, X4, X5, X6, X7, Depth, Salinity, X8, X9, Oxy
 
 **Tracking**
 ```
-Date, Time, Unix Time, Depth, Altitude, Lat, Long
+X1, X2, Unix Time, X3, Altitude, Lat, Long
 ```
