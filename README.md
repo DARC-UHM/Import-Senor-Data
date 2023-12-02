@@ -168,7 +168,7 @@ Example: `EX2306_DIVE01_RovTrack1Hz.csv`
 
 **CTD**
 ```
-Timestamp, X1, X2, Temperature, X3, X4, X5, X6, X7, Depth, Salinity, X8, OxygenMg/L, X9, X10, X11
+Timestamp, X1, X2, Temperature, X3, X4, X5, X6, X7, Depth, Salinity, X8, X9, Oxygen.ML.L, X10, X11
 ```
 
 **Tracking**
