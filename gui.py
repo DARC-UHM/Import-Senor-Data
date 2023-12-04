@@ -2,7 +2,34 @@ import math
 import tkinter as tk
 import subprocess
 
-from tkinter import filedialog, ttk
+from tkinter import filedialog
+
+
+class PlaceholderEntry(tk.Entry):
+    def __init__(self, master=None, placeholder="Enter text here", placeholder_color="grey", width=20, textvariable=None, *args, **kwargs):
+        self.textvar = textvariable if textvariable is not None else tk.StringVar()
+
+        super().__init__(master, textvariable=self.textvar, *args, **kwargs)
+
+        self.placeholder = placeholder
+        self.placeholder_color = placeholder_color
+        self.default_fg_color = self['fg']
+        self.configure(width=width)
+
+        self.bind("<FocusIn>", self._clear_placeholder)
+        self.bind("<FocusOut>", self._add_placeholder)
+
+        self._add_placeholder()
+
+    def _add_placeholder(self, event=None):
+        if not self.textvar.get():
+            self['fg'] = self.placeholder_color
+            self.textvar.set(self.placeholder)
+
+    def _clear_placeholder(self, event=None):
+        if self['fg'] == self.placeholder_color:
+            self.textvar.set('')
+            self['fg'] = self.default_fg_color
 
 
 class Gui(tk.Tk):
@@ -92,7 +119,8 @@ class Gui(tk.Tk):
         # cruise number input
         cruise_frame = tk.Frame(master=background)
         cruise_label = tk.Label(master=cruise_frame, text='CRUISE NUMBER', font=('Helvetica', '13', 'bold'))
-        cruise_entry = tk.Entry(
+        cruise_entry = PlaceholderEntry(
+            placeholder='e.g. EX2306',
             master=cruise_frame,
             width=30,
             textvariable=self.cruise_number,
