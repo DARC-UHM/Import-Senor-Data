@@ -2,7 +2,7 @@ import math
 import tkinter as tk
 import subprocess
 
-from tkinter import filedialog
+from tkinter import filedialog, ttk
 
 
 class PlaceholderEntry(tk.Entry):
@@ -35,6 +35,7 @@ class PlaceholderEntry(tk.Entry):
 class Gui(tk.Tk):
     def __init__(self):
         super().__init__()
+
         self.title('CTD Process')
         self.minsize(350, 400)
 
@@ -42,12 +43,18 @@ class Gui(tk.Tk):
         self.source_folder = tk.StringVar(value='/Volumes/maxarray2/varsadditional')
         self.output_folder = tk.StringVar(value='/Volumes/maxarray2/varsadditional')
 
+        self.notebook = ttk.Notebook(master=self)
+        self.process_bg = ttk.Frame(master=self.notebook)
+        self.settings_bg = tk.Frame(master=self.notebook)
+
         self.button_text = tk.StringVar(value='GO')
         self.processing_text = tk.StringVar(value='')
-        self.background = tk.Frame(master=self)
-        self.canvas = tk.Canvas(master=self.background, width=50, height=50)
+        self.canvas = tk.Canvas(master=self.process_bg, width=50, height=50)
         self.processing = False
 
+        self.notebook.pack()
+        self.notebook.add(self.process_bg, text='Process')
+        self.notebook.add(self.settings_bg, text='Settings')
         self.initialize_widgets()
 
     def go_button_callback(self, go_button):
@@ -114,7 +121,7 @@ class Gui(tk.Tk):
         self.after(30, self.update_spinner, angle + 0.1)
 
     def initialize_widgets(self):
-        background = self.background
+        background = self.process_bg
 
         # cruise number input
         cruise_frame = tk.Frame(master=background)
@@ -164,7 +171,7 @@ class Gui(tk.Tk):
 
         # processing status
         processing_status_label = tk.Label(
-            master=self.background,
+            master=self.process_bg,
             textvariable=self.processing_text,
             font=('Helvetica', '12'),
         )
@@ -197,8 +204,6 @@ class Gui(tk.Tk):
         go_button.pack(pady=(20, 5))
         processing_status_label.pack(pady=(0, 10))
         self.canvas.pack()
-
-        background.pack(padx=30, pady=20)
 
 
 if __name__ == '__main__':
