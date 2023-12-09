@@ -5,7 +5,7 @@
 # ./ex_ctd_processor.sh <cruise_number> <cruise_source_path> <output_destination_path>
 
 # inputs
-cruise_number=$1
+cruise=$1
 cruise_source_path=$2
 output_destination_path=$3
 
@@ -53,7 +53,7 @@ export txt_reset=$(tput sgr0)
 
 # OUTPUT - WRITE
 today=$(date +%Y%m%d)
-tmp_output_destination="$output_destination_path/$cruise_number/$today/tmp"
+tmp_output_destination="$output_destination_path/$cruise/$today/tmp"
 mkdir -p "$tmp_output_destination"
 cd "EX"
 
@@ -71,14 +71,14 @@ dives=($(ls "$cruise_source_path/CTD"| grep .cnv))
 ## iterate through each of the dives
 for((i = 0; i < dive_count; ++i)); do
   num=$((i+1))
-  dive_number=${dives[i]:7:6}
+  dive=${dives[i]:7:6}
 
   printf "\n=============================================\n"
-  printf "                    ${txt_bold}${dive_number}${txt_reset}\n"
+  printf "                    ${txt_bold}${dive}${txt_reset}\n"
   printf "                  Dive $num/$dive_count\n"
 
   # GRAB a COPY of CTD CNV FILES LOCALLY
-  ctd_cnv_file=($(ls "$cruise_source_path/CTD" | grep ${cruise_number}_${dive_number}_))
+  ctd_cnv_file=($(ls "$cruise_source_path/CTD" | grep ${cruise}_${dive}_))
   ctd_cnv_file_path="${cruise_source_path}/CTD/${ctd_cnv_file}"
   if [[ ! -f "$tmp_output_destination/$ctd_cnv_file" ]]; then
     mkdir -p "$tmp_output_destination/ctd" && cp "$ctd_cnv_file_path" "$tmp_output_destination/ctd"
@@ -86,7 +86,7 @@ for((i = 0; i < dive_count; ++i)); do
     echo "Skip copying file over: $ctd_cnv_file_path"
   fi
 
-  nav_csv_file=($(ls "$cruise_source_path/Tracking" | grep ${cruise_number}_${dive_number}_))
+  nav_csv_file=($(ls "$cruise_source_path/Tracking" | grep ${cruise}_${dive}_))
   nav_csv_file_path="${cruise_source_path}/Tracking/${nav_csv_file}"
   if [[ ! -f "$tmp_output_destination/$nav_csv_file_path" ]]; then
     mkdir -p "$tmp_output_destination/nav" && cp "$nav_csv_file_path" "$tmp_output_destination/nav"
@@ -117,13 +117,13 @@ for((i = 0; i < dive_count; ++i)); do
 
   # run R script
   printf "\nMerging data...\r"
-  Rscript EX.R "$cruise_number" "$dive_number" "$dive_start_date" "$tmp_output_destination" "$output_destination_path" #--vanilla --profile
+  Rscript EX.R "$cruise" "$dive" "$dive_start_date" "$tmp_output_destination" "$output_destination_path" #--vanilla --profile
 
 done
 
 # CLEANUP
 printf "\nRemoving temp files...\n"
-rm -rf "$output_destination_path/$cruise_number"
+rm -rf "$output_destination_path/$cruise"
 
 printf "$txt_success\nCruise complete!\n$txt_reset"
 printf "\nMerged csv files saved to ${txt_underline}${output_destination_path}${txt_reset}\n\n"
