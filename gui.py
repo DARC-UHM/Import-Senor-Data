@@ -60,11 +60,16 @@ class Gui(tk.Tk):
         self.canvas = tk.Canvas(master=self.process_bg, width=50, height=50, bg='#e5e5e5', highlightthickness=0)
         self.processing = False
 
+        self.columns_frame = ttk.Frame(master=self.settings_bg)
+        self.ctd_columns_frame = tk.Frame(master=self.columns_frame, highlightbackground='#ccc', highlightthickness=1, highlightcolor='#ddd')
+        self.tracking_columns_frame = tk.Frame(master=self.columns_frame, highlightbackground='#ccc', highlightthickness=1, highlightcolor='#ddd')
+
         self.notebook.pack()
         self.notebook.add(self.process_bg, text='Process')
         self.notebook.add(self.settings_bg, text='Settings')
         self.initialize_process_widgets()
         self.initialize_settings_widgets()
+        self.set_column_widgets('CTD')
 
     def go_button_callback(self, go_button):
         cruise_number = self.cruise_number.get()
@@ -237,7 +242,7 @@ class Gui(tk.Tk):
         ctd_directory_label = ttk.Label(
             master=ctd_directory_frame,
             text='CTD DIRECTORY',
-            font=('Helvetica', '13', 'bold'),
+            font=('Helvetica', '12', 'bold'),
         )
 
         # tracking directory input
@@ -250,72 +255,210 @@ class Gui(tk.Tk):
         tracking_directory_label = ttk.Label(
             master=tracking_directory_frame,
             text='TRACKING DIRECTORY',
-            font=('Helvetica', '13', 'bold'),
+            font=('Helvetica', '12', 'bold'),
         )
 
-        naming_conventions_frame = ttk.Frame(master=background)
-        ctd_naming_frame = ttk.Frame(master=naming_conventions_frame)
+        ctd_naming_frame = ttk.Frame(master=background)
         ctd_naming_label = ttk.Label(
             master=ctd_naming_frame,
             text='CTD FILE NAMES',
-            font=('Helvetica', '13', 'bold'),
+            font=('Helvetica', '12', 'bold'),
         )
         ctd_naming_entry = ttk.Entry(
             master=ctd_naming_frame,
-            width=14,
+            width=30,
             textvariable=self.ctd_file_names,
         )
 
-        dive_naming_frame = ttk.Frame(master=naming_conventions_frame)
+        dive_naming_frame = ttk.Frame(master=background)
         dive_naming_label = ttk.Label(
             master=dive_naming_frame,
-            text='DIVE FILE NAMES',
-            font=('Helvetica', '13', 'bold'),
+            text='TRACKING FILE NAMES',
+            font=('Helvetica', '12', 'bold'),
         )
         dive_naming_entry = ttk.Entry(
             master=dive_naming_frame,
-            width=14,
+            width=30,
             textvariable=self.dive_file_names,
         )
 
-        columns_frame = ttk.Frame(master=background)
+        columns_header_frame = ttk.Frame(master=self.columns_frame)
         columns_label = ttk.Label(
-            master=columns_frame,
+            master=columns_header_frame,
             text='COLUMNS',
             font=('Helvetica', '13', 'bold'),
         )
         column_combobox = ttk.Combobox(
-            master=columns_frame,
+            master=columns_header_frame,
             values=['CTD', 'Tracking'],
-            width=14,
+            width=10,
             state='readonly',
         )
         column_combobox.current(0)
-        column_combobox.bind('<<ComboboxSelected>>', lambda event: print(column_combobox.get()))
+        column_combobox.bind('<<ComboboxSelected>>', lambda event: self.set_column_widgets(column_combobox.get()))
+
+        timestamp_frame = tk.Frame(master=self.ctd_columns_frame)
+        timestamp_label = tk.Label(
+            master=timestamp_frame,
+            text='TIMESTAMP',
+            font=('Helvetica', '12', 'bold'),
+        )
+        timestamp_entry = tk.Entry(
+            master=timestamp_frame,
+            width=6,
+        )
+
+        temperature_frame = tk.Frame(master=self.ctd_columns_frame)
+        temperature_label = tk.Label(
+            master=temperature_frame,
+            text='TEMPERATURE',
+            font=('Helvetica', '12', 'bold'),
+        )
+        temperature_entry = tk.Entry(
+            master=temperature_frame,
+            width=6,
+        )
+
+        depth_frame = tk.Frame(master=self.ctd_columns_frame)
+        depth_label = tk.Label(
+            master=depth_frame,
+            text='DEPTH',
+            font=('Helvetica', '12', 'bold'),
+        )
+        depth_entry = tk.Entry(
+            master=depth_frame,
+            width=6,
+        )
+
+        salinity_frame = tk.Frame(master=self.ctd_columns_frame)
+        salinity_label = tk.Label(
+            master=salinity_frame,
+            text='SALINITY',
+            font=('Helvetica', '12', 'bold'),
+        )
+        salinity_entry = tk.Entry(
+            master=salinity_frame,
+            width=6,
+        )
+
+        oxygen_frame = tk.Frame(master=self.ctd_columns_frame)
+        oxygen_label = tk.Label(
+            master=oxygen_frame,
+            text='OXYGEN',
+            font=('Helvetica', '12', 'bold'),
+        )
+        oxygen_entry = tk.Entry(
+            master=oxygen_frame,
+            width=6,
+        )
+
+        unix_time_frame = tk.Frame(master=self.tracking_columns_frame)
+        unix_time_label = tk.Label(
+            master=unix_time_frame,
+            text='UNIX TIME',
+            font=('Helvetica', '12', 'bold'),
+        )
+        unix_time_entry = tk.Entry(
+            master=unix_time_frame,
+            width=6,
+        )
+
+        altitude_frame = tk.Frame(master=self.tracking_columns_frame)
+        altitude_label = tk.Label(
+            master=altitude_frame,
+            text='ALTITUDE',
+            font=('Helvetica', '12', 'bold'),
+        )
+        altitude_entry = tk.Entry(
+            master=altitude_frame,
+            width=6,
+        )
+
+        latitude_frame = tk.Frame(master=self.tracking_columns_frame)
+        latitude_label = tk.Label(
+            master=latitude_frame,
+            text='LATITUDE',
+            font=('Helvetica', '12', 'bold'),
+        )
+        latitude_entry = tk.Entry(
+            master=latitude_frame,
+            width=6,
+        )
+
+        longitude_frame = tk.Frame(master=self.tracking_columns_frame)
+        longitude_label = tk.Label(
+            master=longitude_frame,
+            text='LONGITUDE',
+            font=('Helvetica', '12', 'bold'),
+        )
+        longitude_entry = tk.Entry(
+            master=longitude_frame,
+            width=6,
+        )
+
+        save_button = tk.Button(
+            master=background,
+            text='SAVE',
+            width=14,
+            height=2,
+            font=('Helvetica', '13', 'bold'),
+        )
 
         # packin
         settings_label.pack(pady=(5, 0))
         settings_sub_label.pack(pady=(0, 5))
 
-        ctd_directory_frame.pack(pady=10)
+        ctd_directory_frame.pack(fill=tk.X, pady=(0, 5))
         ctd_directory_label.pack(anchor='w')
         ctd_directory_entry.pack(anchor='w')
 
-        tracking_directory_frame.pack(pady=10)
+        tracking_directory_frame.pack(fill=tk.X, pady=(0, 5))
         tracking_directory_label.pack(anchor='w')
         tracking_directory_entry.pack(anchor='w')
 
-        naming_conventions_frame.pack(pady=10, fill=tk.X)
-        ctd_naming_frame.pack(side=tk.LEFT)
-        ctd_naming_label.pack(side=tk.TOP, anchor='w')
-        ctd_naming_entry.pack(side=tk.TOP, anchor='w')
-        dive_naming_frame.pack(side=tk.RIGHT)
-        dive_naming_label.pack(side=tk.TOP, anchor='w')
-        dive_naming_entry.pack(side=tk.TOP, anchor='w')
+        ctd_naming_frame.pack(fill=tk.X, pady=(0, 5))
+        ctd_naming_label.pack(anchor='w')
+        ctd_naming_entry.pack(anchor='w')
 
-        columns_frame.pack(pady=10, fill=tk.X)
+        dive_naming_frame.pack(fill=tk.X, pady=(0, 5))
+        dive_naming_label.pack(anchor='w')
+        dive_naming_entry.pack(anchor='w')
+
+        self.columns_frame.pack(fill=tk.X)
+        columns_header_frame.pack(fill=tk.X)
         columns_label.pack(side=tk.LEFT, anchor='w')
         column_combobox.pack(side=tk.RIGHT, anchor='w')
+
+        self.ctd_columns_frame.pack(fill=tk.X, anchor='s', ipady=5)
+        self.pack_column_frame(timestamp_frame, timestamp_label, timestamp_entry, 1)
+        self.pack_column_frame(temperature_frame, temperature_label, temperature_entry, 0)
+        self.pack_column_frame(depth_frame, depth_label, depth_entry, 0)
+        self.pack_column_frame(salinity_frame, salinity_label, salinity_entry, 0)
+        self.pack_column_frame(oxygen_frame, oxygen_label, oxygen_entry, -1)
+        self.pack_column_frame(unix_time_frame, unix_time_label, unix_time_entry, 1)
+        self.pack_column_frame(altitude_frame, altitude_label, altitude_entry, 0)
+        self.pack_column_frame(latitude_frame, latitude_label, latitude_entry, 0)
+        self.pack_column_frame(longitude_frame, longitude_label, longitude_entry, -1)
+
+        save_button.pack(pady=(5, 20), anchor='e')
+
+    def set_column_widgets(self, _type):
+        if _type == 'CTD':
+            # set CTD columns
+            self.tracking_columns_frame.pack_forget()
+            self.ctd_columns_frame.pack(pady=5, fill=tk.X)
+        else:
+            # set tracking columns
+            self.ctd_columns_frame.pack_forget()
+            self.tracking_columns_frame.pack(pady=5, fill=tk.X)
+
+    def pack_column_frame(self, frame, label, entry, pos):
+        match pos:
+            case 1: frame.pack(fill=tk.X, padx=10, pady=(5, 0))
+            case 0: frame.pack(fill=tk.X, padx=10)
+            case -1: frame.pack(fill=tk.X, padx=10, pady=(0, 5))
+        label.pack(side=tk.LEFT)
+        entry.pack(side=tk.RIGHT)
 
 
 if __name__ == '__main__':
