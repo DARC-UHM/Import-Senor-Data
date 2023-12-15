@@ -10,8 +10,6 @@ class ConfigFileHandler:
 
         self.get_save_path()
         self.load_config()
-        print(self.save_path)
-        print(self.config)
 
     def get_save_path(self):
         if os.name == 'nt':
@@ -38,22 +36,22 @@ class ConfigFileHandler:
 
     def load_default_config(self):
         self.config = {
-            'cruiseNum': '',
-            'baseDir': '/Volumes/maxarray2/varsadditional',
-            'outputDir': '/Volumes/maxarray2/varsadditional',
-            'ctdDirPath': '${base_dir}/CTD',
-            'trackingDirPath': '${base_dir}/Tracking',
-            'ctdFileName': '${cruise}_${dive}_',
-            'trackingFileName': '${cruise}_${dive}_RovTrack1Hz.csv',
-            'ctdColumns': {
+            'cruise_number': '',
+            'base_dir': '/Volumes/maxarray2/varsadditional',
+            'output_dir': '/Volumes/maxarray2/varsadditional',
+            'ctd_dir': '${base_dir}/CTD',
+            'tracking_dir': '${base_dir}/Tracking',
+            'ctd_file_names': '${cruise}_${dive}_',
+            'tracking_file_names': '${cruise}_${dive}_RovTrack1Hz.csv',
+            'ctd_cols': {
                 'timestamp': 1,
                 'temperature': 4,
                 'depth': 10,
                 'salinity': 11,
                 'oxygen': 13
             },
-            'trackingColumns': {
-                'unixTime': 3,
+            'tracking_cols': {
+                'unix_time': 3,
                 'altitude': 5,
                 'latitude': 6,
                 'longitude': 7

@@ -16,7 +16,6 @@ class PlaceholderEntry(ttk.Entry):
         self.placeholder = placeholder
         self.placeholder_color = placeholder_color
         self.configure(width=width)
-        self.config_handler = ConfigFileHandler()
 
         self.bind("<FocusIn>", self._clear_placeholder)
         self.bind("<FocusOut>", self._add_placeholder)
@@ -45,14 +44,28 @@ class Gui(tk.Tk):
         self.title('CTD Process')
         self.minsize(350, 400)
 
-        self.cruise_number = tk.StringVar(value='')
-        self.source_folder = tk.StringVar(value='/Volumes/maxarray2/varsadditional')
-        self.output_folder = tk.StringVar(value='/Volumes/maxarray2/varsadditional')
+        self.config_handler = ConfigFileHandler()
+        self.config = self.config_handler.config
 
-        self.ctd_directory = tk.StringVar(value='{BASE_DIR}/CTD')
-        self.tracking_directory = tk.StringVar(value='{BASE_DIR}/Tracking')
-        self.ctd_file_names = tk.StringVar(value='${cruise}_${dive}_')
-        self.tracking_file_names = tk.StringVar(value='${cruise}_${dive}_RovTrack1Hz.csv')
+        self.cruise_number = tk.StringVar(value=self.config['cruise_number'])
+        self.base_dir = tk.StringVar(value=self.config['base_dir'])
+        self.output_dir = tk.StringVar(value=self.config['output_dir'])
+
+        self.ctd_directory = tk.StringVar(value=self.config['ctd_dir'])
+        self.tracking_directory = tk.StringVar(value=self.config['tracking_dir'])
+        self.ctd_file_names = tk.StringVar(value=self.config['ctd_file_names'])
+        self.tracking_file_names = tk.StringVar(value=self.config['tracking_file_names'])
+
+        self.timestamp_col = tk.StringVar(value=self.config['ctd_cols']['timestamp'])
+        self.temperature_col = tk.StringVar(value=self.config['ctd_cols']['temperature'])
+        self.depth_col = tk.StringVar(value=self.config['ctd_cols']['depth'])
+        self.salinity_col = tk.StringVar(value=self.config['ctd_cols']['salinity'])
+        self.oxygen_col = tk.StringVar(value=self.config['ctd_cols']['oxygen'])
+
+        self.unix_time_col = tk.StringVar(value=self.config['tracking_cols']['unix_time'])
+        self.altitude_col = tk.StringVar(value=self.config['tracking_cols']['altitude'])
+        self.latitude_col = tk.StringVar(value=self.config['tracking_cols']['latitude'])
+        self.longitude_col = tk.StringVar(value=self.config['tracking_cols']['longitude'])
 
         self.notebook = ttk.Notebook(master=self)
         self.process_bg = ttk.Frame(master=self.notebook)
@@ -86,23 +99,23 @@ class Gui(tk.Tk):
 
     def go_button_callback(self, go_button):
         cruise_number = self.cruise_number.get()
-        source_folder = self.source_folder.get()
-        output_folder = self.output_folder.get()
+        base_dir = self.base_dir.get()
+        output_dir = self.output_dir.get()
         process = None
         if cruise_number.startswith('EX'):
             process = subprocess.Popen([
                 'EX/ex_ctd_processor.sh',
                 cruise_number,
-                source_folder,
-                output_folder,
+                base_dir,
+                output_dir,
             ])
         elif cruise_number.startswith('NA'):
             process = subprocess.Popen([
                 'NA/na_ctd_processor.sh',
                 cruise_number,
-                source_folder,
-                f'{source_folder}/processed/dive_reports',
-                output_folder,
+                base_dir,
+                f'{base_dir}/processed/dive_reports',
+                output_dir,
             ])
         else:
             self.processing_text.set('Could not determine preset \nCruise number should start with "NA" or "EX"')
@@ -164,13 +177,13 @@ class Gui(tk.Tk):
         base_directory_frame = ttk.Frame(master=background)
         base_directory_entry = ttk.Entry(
             master=base_directory_frame,
-            textvariable=self.source_folder,
+            textvariable=self.base_dir,
             width=30,
         )
         base_directory_browse_button = ttk.Button(
             master=base_directory_frame,
             text='Browse',
-            command=lambda: self.get_file_path(self.source_folder),
+            command=lambda: self.get_file_path(self.base_dir),
         )
         base_directory_label = ttk.Label(
             master=base_directory_frame,
@@ -182,13 +195,13 @@ class Gui(tk.Tk):
         output_directory_frame = ttk.Frame(master=background)
         output_directory_entry = ttk.Entry(
             master=output_directory_frame,
-            textvariable=self.output_folder,
+            textvariable=self.output_dir,
             width=30,
         )
         output_directory_browse_button = ttk.Button(
             master=output_directory_frame,
             text='Browse',
-            command=lambda: self.get_file_path(self.output_folder),
+            command=lambda: self.get_file_path(self.output_dir),
         )
         output_directory_label = ttk.Label(
             master=output_directory_frame,
@@ -319,6 +332,7 @@ class Gui(tk.Tk):
         timestamp_entry = tk.Entry(
             master=timestamp_frame,
             width=6,
+            textvariable=self.timestamp_col,
         )
 
         temperature_frame = tk.Frame(master=self.ctd_columns_frame)
@@ -330,6 +344,7 @@ class Gui(tk.Tk):
         temperature_entry = tk.Entry(
             master=temperature_frame,
             width=6,
+            textvariable=self.temperature_col,
         )
 
         depth_frame = tk.Frame(master=self.ctd_columns_frame)
@@ -341,6 +356,7 @@ class Gui(tk.Tk):
         depth_entry = tk.Entry(
             master=depth_frame,
             width=6,
+            textvariable=self.depth_col,
         )
 
         salinity_frame = tk.Frame(master=self.ctd_columns_frame)
@@ -352,6 +368,7 @@ class Gui(tk.Tk):
         salinity_entry = tk.Entry(
             master=salinity_frame,
             width=6,
+            textvariable=self.salinity_col,
         )
 
         oxygen_frame = tk.Frame(master=self.ctd_columns_frame)
@@ -363,6 +380,7 @@ class Gui(tk.Tk):
         oxygen_entry = tk.Entry(
             master=oxygen_frame,
             width=6,
+            textvariable=self.oxygen_col,
         )
 
         unix_time_frame = tk.Frame(master=self.tracking_columns_frame)
@@ -374,6 +392,7 @@ class Gui(tk.Tk):
         unix_time_entry = tk.Entry(
             master=unix_time_frame,
             width=6,
+            textvariable=self.unix_time_col,
         )
 
         altitude_frame = tk.Frame(master=self.tracking_columns_frame)
@@ -385,6 +404,7 @@ class Gui(tk.Tk):
         altitude_entry = tk.Entry(
             master=altitude_frame,
             width=6,
+            textvariable=self.altitude_col,
         )
 
         latitude_frame = tk.Frame(master=self.tracking_columns_frame)
@@ -396,6 +416,7 @@ class Gui(tk.Tk):
         latitude_entry = tk.Entry(
             master=latitude_frame,
             width=6,
+            textvariable=self.latitude_col,
         )
 
         longitude_frame = tk.Frame(master=self.tracking_columns_frame)
@@ -407,6 +428,7 @@ class Gui(tk.Tk):
         longitude_entry = tk.Entry(
             master=longitude_frame,
             width=6,
+            textvariable=self.longitude_col,
         )
 
         save_button = tk.Button(
