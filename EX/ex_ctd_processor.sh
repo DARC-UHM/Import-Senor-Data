@@ -1,46 +1,13 @@
 #!/bin/bash
 #set -x # for debugging
 
+# brew install ag (ag is the_silver_searcher, faster than grep)
+# brew install jq (for reading json config file)
+
 # usage:
-# ./ex_ctd_processor.sh <cruise_number> <cruise_source_path> <output_destination_path>
+# ./ex_ctd_processor.sh <config file path>
 
-# inputs
-cruise=$1
-cruise_source_path=$2
-output_destination_path=$3
-
-# IF COLUMNS IN CTD CNV FILE CHANGE, UPDATE IN EX.R (line 28)
-#
-# CURRENT CTD CNV FILE COLUMNS (IN THIS ORDER):
-#
-# Timestamp  (this is currently seconds after 2000-01-01 00:00:00)
-# prDM
-# prDE
-# Temperature
-# c0S/m
-# seaTurbMtr
-# sbeox0V
-# upoly0
-# modError
-# Depth
-# Salinity
-# svCM
-# sbeox0Mg/L
-# Oxygen.Mg.L
-# sbox0Mm/Kg
-# flag
-
-# IF COLUMNS IN NAV CSV FILE CHANGE, UPDATE IN EX.R (line 64)
-#
-# CURRENT NAV CSV FILE COLUMNS (IN THIS ORDER):
-#
-# DATE
-# TIME
-# UNIXTIME
-# DEPTH
-# Alt
-# Lat
-# Long
+config_file=$1
 
 # load pretty colors
 export txt_bold=$(tput bold)
@@ -51,43 +18,71 @@ export txt_warn=${txt_bold}$(tput setaf 3)
 export txt_error=${txt_bold}$(tput setaf 1)
 export txt_reset=$(tput sgr0)
 
+read_json() {
+    local json_file="$1"
+    local key="$2"
+    jq -r ".$key" "$json_file"
+}
+
+# load values from config file
+cruise_number=$(read_json "$config_file" "cruise_number")
+base_dir=$(read_json "$config_file" "base_dir")
+output_dir=$(read_json "$config_file" "output_dir")
+temp_ctd_dir=$(read_json "$config_file" "ctd_dir")
+temp_tracking_dir=$(read_json "$config_file" "tracking_dir")
+temp_ctd_file_names=$(read_json "$config_file" "ctd_file_names")
+temp_tracking_file_names=$(read_json "$config_file" "tracking_file_names")
+timestamp_column=$(read_json "$config_file" "ctd_cols.timestamp")
+temperature_column=$(read_json "$config_file" "ctd_cols.temperature")
+salinity_column=$(read_json "$config_file" "ctd_cols.salinity")
+oxygen_column=$(read_json "$config_file" "ctd_cols.oxygen")
+unix_time_column=$(read_json "$config_file" "tracking_cols.unix_time")
+altitude_column=$(read_json "$config_file" "tracking_cols.altitude")
+latitude_column=$(read_json "$config_file" "tracking_cols.latitude")
+longitude_column=$(read_json "$config_file" "tracking_cols.longitude")
+
+ctd_dir=$(echo "$(eval echo "$temp_ctd_dir")")
+tracking_dir=$(echo "$(eval echo "$temp_tracking_dir")")
+
 # OUTPUT - WRITE
 today=$(date +%Y%m%d)
-tmp_output_destination="$output_destination_path/$cruise/$today/tmp"
+tmp_output_destination="$output_dir/$cruise_number/$today/tmp"
 mkdir -p "$tmp_output_destination"
 cd "EX"
 
 # Given a cruise number, identify the number of dives in the cruise
-dive_count=`(ls "$cruise_source_path/CTD" | grep .cnv | wc -l | tr -d " ")`
+dive_count=`(ls "$ctd_dir" | grep "$cruise_number" | wc -l | tr -d " ")`
 if((dive_count == 0)); then
-  printf "\n${txt_error}No dives found in $cruise_source_path$txt_reset\n\n"
+  printf "\n${txt_error}No dives matching cruise number $cruise_number found in $base_dir$txt_reset\n\n"
   exit 1
 fi
 
 printf "\n${txt_bold}Found $dive_count dives$txt_reset\n"
 
-dives=($(ls "$cruise_source_path/CTD"| grep .cnv))
+dives=($(ls "$ctd_dir"| grep .cnv))
 
 ## iterate through each of the dives
 for((i = 0; i < dive_count; ++i)); do
   num=$((i+1))
   dive=${dives[i]:7:6}
+  ctd_file_names=$(echo "$(eval echo "$temp_ctd_file_names")")
+  tracking_file_names=$(echo "$(eval echo "$temp_tracking_file_names")")
 
   printf "\n=============================================\n"
   printf "                    ${txt_bold}${dive}${txt_reset}\n"
   printf "                  Dive $num/$dive_count\n"
 
   # GRAB a COPY of CTD CNV FILES LOCALLY
-  ctd_cnv_file=($(ls "$cruise_source_path/CTD" | grep ${cruise}_${dive}_))
-  ctd_cnv_file_path="${cruise_source_path}/CTD/${ctd_cnv_file}"
+  ctd_cnv_file=($(ls "$ctd_dir" | grep "$ctd_file_names"))
+  ctd_cnv_file_path="${ctd_dir}/${ctd_cnv_file}"
   if [[ ! -f "$tmp_output_destination/$ctd_cnv_file" ]]; then
     mkdir -p "$tmp_output_destination/ctd" && cp "$ctd_cnv_file_path" "$tmp_output_destination/ctd"
   else
     echo "Skip copying file over: $ctd_cnv_file_path"
   fi
 
-  nav_csv_file=($(ls "$cruise_source_path/Tracking" | grep "${cruise}_${dive}_RovTrack1Hz.csv"))
-  nav_csv_file_path="${cruise_source_path}/Tracking/${nav_csv_file}"
+  nav_csv_file=($(ls "$tracking_dir" | grep "$tracking_file_names"))
+  nav_csv_file_path="${tracking_dir}/${nav_csv_file}"
   if [[ ! -f "$tmp_output_destination/$nav_csv_file_path" ]]; then
     mkdir -p "$tmp_output_destination/nav" && cp "$nav_csv_file_path" "$tmp_output_destination/nav"
   else
@@ -117,7 +112,7 @@ for((i = 0; i < dive_count; ++i)); do
 
   # run R script
   printf "\nMerging data...\r"
-  Rscript EX.R "$cruise" "$dive" "$dive_start_date" "$tmp_output_destination" "$output_destination_path" #--vanilla --profile
+  Rscript EX.R "$cruise_number" "$dive" "$dive_start_date" "$tmp_output_destination" "$output_dir" #--vanilla --profile
 
 done
 

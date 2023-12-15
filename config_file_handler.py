@@ -5,7 +5,7 @@ import os
 
 class ConfigFileHandler:
     def __init__(self):
-        self.save_path = ''
+        self.config_file_path = ''
         self.config = {}
 
         self.get_save_path()
@@ -13,16 +13,18 @@ class ConfigFileHandler:
 
     def get_save_path(self):
         if os.name == 'nt':
-            self.save_path = os.getenv('LOCALAPPDATA')
+            self.config_file_path = os.getenv('LOCALAPPDATA')
         else:
-            self.save_path = os.getenv('HOME') + '/Library/Application Support'
+            self.config_file_path = os.getenv('HOME') + '/Library/Application Support'
 
     def load_config(self):
-        os.chdir(self.save_path)
+        current_dir = os.getcwd()
+        os.chdir(self.config_file_path)
         try:
             os.mkdir('CTDProcess')
         except OSError as err:
             if err.errno != errno.EEXIST:
+                os.chdir(current_dir)
                 # if the OS error is something other than 'directory already exists', raise the error
                 raise
             # otherwise, ignore the error
@@ -33,6 +35,7 @@ class ConfigFileHandler:
                 self.config = json.load(config_file)
         except FileNotFoundError:
             self.load_default_config()
+        os.chdir(current_dir)
 
     def load_default_config(self):
         self.config = {
@@ -57,14 +60,17 @@ class ConfigFileHandler:
                 'longitude': 7
             }
         }
+        self.save_config(self.config)
 
     def save_config(self, new_config):
-        os.chdir(self.save_path)
+        current_dir = os.getcwd()
+        os.chdir(self.config_file_path)
         try:
             os.mkdir('CTDProcess')
         except OSError as err:
             if err.errno != errno.EEXIST:
                 print(err)
+                os.chdir(current_dir)
                 return False
         os.chdir('CTDProcess')
         try:
@@ -72,5 +78,7 @@ class ConfigFileHandler:
                 json.dump(new_config, config_file, indent=2)
         except IOError as err:
             print(err)
+            os.chdir(current_dir)
             return False
+        os.chdir(current_dir)
         return True

@@ -2,6 +2,12 @@
 
 This repository contains scripts that prepare ROV sensor data for input into VARS. There are currently two scripts, one for data from Deep Discoverer (Nautilus, NA) and one for data from Hercules, (Okeanos Explorer, EX). The scripts can be run from the command line or through a simple GUI.
 
+### Requirements
+
+- Python ≥ 3.10
+- R
+- Command line tools `ag` and `jq` (install with `brew install ag jq`)
+
 ## GUI
 
 To use the GUI, navigate to the root of the repository and run the command `python3 gui.py`. The following window will appear:

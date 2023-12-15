@@ -103,12 +103,11 @@ class Gui(tk.Tk):
         base_dir = self.base_dir.get()
         output_dir = self.output_dir.get()
         process = None
+        self.save_button_callback()
         if cruise_number.startswith('EX'):
             process = subprocess.Popen([
                 'EX/ex_ctd_processor.sh',
-                cruise_number,
-                base_dir,
-                output_dir,
+                f'{self.config_handler.config_file_path}/CTDProcess/ctd_process_config.json',
             ])
         elif cruise_number.startswith('NA'):
             process = subprocess.Popen([
