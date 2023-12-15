@@ -59,4 +59,18 @@ class ConfigFileHandler:
         }
 
     def save_config(self, new_config):
-        pass
+        os.chdir(self.save_path)
+        try:
+            os.mkdir('CTDProcess')
+        except OSError as err:
+            if err.errno != errno.EEXIST:
+                print(err)
+                return False
+        os.chdir('CTDProcess')
+        try:
+            with open('ctd_process_config.json', 'w') as config_file:
+                json.dump(new_config, config_file, indent=2)
+        except IOError as err:
+            print(err)
+            return False
+        return True

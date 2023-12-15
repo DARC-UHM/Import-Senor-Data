@@ -73,6 +73,7 @@ class Gui(tk.Tk):
 
         self.button_text = tk.StringVar(value='GO')
         self.processing_text = tk.StringVar(value='')
+        self.config_save_status = tk.StringVar(value='')
         self.canvas = tk.Canvas(master=self.process_bg, width=50, height=50, bg='#e5e5e5', highlightthickness=0)
         self.processing = False
 
@@ -150,6 +151,34 @@ class Gui(tk.Tk):
     def get_file_path(self, path):
         file_path = filedialog.askdirectory(initialdir='/Volumes/maxarray2/varsadditional', title='Select a folder')
         path.set(file_path)
+
+    def save_button_callback(self):
+        config = {
+            'cruise_number': self.cruise_number.get(),
+            'base_dir': self.base_dir.get(),
+            'output_dir': self.output_dir.get(),
+            'ctd_dir': self.ctd_directory.get(),
+            'tracking_dir': self.tracking_directory.get(),
+            'ctd_file_names': self.ctd_file_names.get(),
+            'tracking_file_names': self.tracking_file_names.get(),
+            'ctd_cols': {
+                'timestamp': self.timestamp_col.get(),
+                'temperature': self.temperature_col.get(),
+                'depth': self.depth_col.get(),
+                'salinity': self.salinity_col.get(),
+                'oxygen': self.oxygen_col.get(),
+            },
+            'tracking_cols': {
+                'unix_time': self.unix_time_col.get(),
+                'altitude': self.altitude_col.get(),
+                'latitude': self.latitude_col.get(),
+                'longitude': self.longitude_col.get(),
+            }
+        }
+        if self.config_handler.save_config(config):
+            self.config_save_status.set('Saved!')
+        else:
+            self.config_save_status.set('Error saving config')
 
     def update_spinner(self, angle):
         self.canvas.delete('spinner')
@@ -437,6 +466,13 @@ class Gui(tk.Tk):
             width=14,
             height=2,
             font=('Helvetica', '13', 'bold'),
+            command=lambda: self.save_button_callback(),
+        )
+
+        status = ttk.Label(
+            master=background,
+            textvariable=self.config_save_status,
+            font=('Helvetica', '12'),
         )
 
         # packin
@@ -475,7 +511,8 @@ class Gui(tk.Tk):
         self.pack_column_frame(latitude_frame, latitude_label, latitude_entry, 0)
         self.pack_column_frame(longitude_frame, longitude_label, longitude_entry, -1)
 
-        save_button.pack(pady=(5, 20), anchor='e')
+        save_button.pack(pady=(5, 0))
+        status.pack(pady=(0, 20))
 
     def set_column_widgets(self, _type):
         if _type == 'CTD':
