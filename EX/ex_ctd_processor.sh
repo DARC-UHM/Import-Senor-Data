@@ -86,7 +86,7 @@ for((i = 0; i < dive_count; ++i)); do
     echo "Skip copying file over: $ctd_cnv_file_path"
   fi
 
-  nav_csv_file=($(ls "$cruise_source_path/Tracking" | grep ${cruise}_${dive}_))
+  nav_csv_file=($(ls "$cruise_source_path/Tracking" | grep "${cruise}_${dive}_RovTrack1Hz.csv"))
   nav_csv_file_path="${cruise_source_path}/Tracking/${nav_csv_file}"
   if [[ ! -f "$tmp_output_destination/$nav_csv_file_path" ]]; then
     mkdir -p "$tmp_output_destination/nav" && cp "$nav_csv_file_path" "$tmp_output_destination/nav"

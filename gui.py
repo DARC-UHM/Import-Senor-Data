@@ -4,6 +4,8 @@ import subprocess
 
 from tkinter import filedialog, ttk
 
+from config_file_handler import ConfigFileHandler
+
 
 class PlaceholderEntry(ttk.Entry):
     def __init__(self, master=None, placeholder='Enter text here', placeholder_color='grey', width=20, textvariable=None, *args, **kwargs):
@@ -14,6 +16,7 @@ class PlaceholderEntry(ttk.Entry):
         self.placeholder = placeholder
         self.placeholder_color = placeholder_color
         self.configure(width=width)
+        self.config_handler = ConfigFileHandler()
 
         self.bind("<FocusIn>", self._clear_placeholder)
         self.bind("<FocusOut>", self._add_placeholder)
@@ -49,7 +52,7 @@ class Gui(tk.Tk):
         self.ctd_directory = tk.StringVar(value='{BASE_DIR}/CTD')
         self.tracking_directory = tk.StringVar(value='{BASE_DIR}/Tracking')
         self.ctd_file_names = tk.StringVar(value='${cruise}_${dive}_')
-        self.dive_file_names = tk.StringVar(value='${cruise}_${dive}_')
+        self.tracking_file_names = tk.StringVar(value='${cruise}_${dive}_RovTrack1Hz.csv')
 
         self.notebook = ttk.Notebook(master=self)
         self.process_bg = ttk.Frame(master=self.notebook)
@@ -61,8 +64,18 @@ class Gui(tk.Tk):
         self.processing = False
 
         self.columns_frame = ttk.Frame(master=self.settings_bg)
-        self.ctd_columns_frame = tk.Frame(master=self.columns_frame, highlightbackground='#ccc', highlightthickness=1, highlightcolor='#ddd')
-        self.tracking_columns_frame = tk.Frame(master=self.columns_frame, highlightbackground='#ccc', highlightthickness=1, highlightcolor='#ddd')
+        self.ctd_columns_frame = tk.Frame(
+            master=self.columns_frame,
+            highlightbackground='#ccc',
+            highlightthickness=1,
+            highlightcolor='#ddd'
+        )
+        self.tracking_columns_frame = tk.Frame(
+            master=self.columns_frame,
+            highlightbackground='#ccc',
+            highlightthickness=1,
+            highlightcolor='#ddd'
+        )
 
         self.notebook.pack()
         self.notebook.add(self.process_bg, text='Process')
@@ -279,7 +292,7 @@ class Gui(tk.Tk):
         dive_naming_entry = ttk.Entry(
             master=dive_naming_frame,
             width=30,
-            textvariable=self.dive_file_names,
+            textvariable=self.tracking_file_names,
         )
 
         columns_header_frame = ttk.Frame(master=self.columns_frame)
