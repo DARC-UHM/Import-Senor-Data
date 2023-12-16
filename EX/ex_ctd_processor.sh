@@ -112,7 +112,7 @@ for((i = 0; i < dive_count; ++i)); do
 
   # run R script
   printf "\nMerging data...\r"
-  Rscript EX.R "$cruise_number" "$dive" "$dive_start_date" "$tmp_output_destination" "$output_dir" #--vanilla --profile
+  Rscript EX.R "$config_file" "$dive" "$dive_start_date" "$tmp_output_destination"
 
 done
 

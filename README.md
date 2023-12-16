@@ -5,7 +5,7 @@ This repository contains scripts that prepare ROV sensor data for input into VAR
 ### Requirements
 
 - Python ≥ 3.10
-- R
+- R and R packages `tidyverse`, `jsonlite`, `readr`, `dplyr`, `purrr`, and `cli`
 - Command line tools `ag` and `jq` (install with `brew install ag jq`)
 
 ## GUI

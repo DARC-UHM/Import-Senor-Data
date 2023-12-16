@@ -1,33 +1,41 @@
 # options(error=traceback)
 # install.packages("tidyverse")
+# install.packages("jsonlite")
 suppressPackageStartupMessages(library(tidyverse))
 library(readr)
 library(dplyr)
 library(purrr)
+suppressPackageStartupMessages(library(jsonlite))
 library(cli)
 
-#  Rscript EX.R "$cruise_number" "$dive_number" "$dive_start_date" "$tmp_output_destination" "$output_destination_path"
+#  Rscript EX.R "$config_file" "$dive_number" "$dive_start_date" "$tmp_output_destination"
 
 #  Access the arguments
 args <- commandArgs(trailingOnly = TRUE)
-cruise_number <- args[1]
+config_file_path <- args[1]
 dive_number <- args[2]
 dive_start_date <- args[3]
-tmp_input_files <- args[4]
-output_destination_path <- args[5]
+tmp_output_dest <- args[4]
+
+config_data <- fromJSON(config_file_path)
 
 format_time <- function(timestamp) {
   return (format(as.POSIXct(timestamp, format = "%Y-%m-%dT%H:%M:%S"), format = "%Y%m%dT%H%M%SZ"))
 }
 
 read_ctd_data <- function() {
-  ctd_folder_path <- paste0(tmp_input_files, "/ctd")
-  ctd_file_pattern <- paste0(cruise_number, "_", dive_number, ".*", ".cnv")
+  ctd_folder_path <- paste0(tmp_output_dest, "/ctd")
+  ctd_file_pattern <- paste0(config_data$cruise_number, "_", dive_number, ".*", ".cnv")
   ctd_file <- list.files(ctd_folder_path, pattern = ctd_file_pattern, full.names = TRUE)
 
-  # these can can be changed as needed to match the column names in the CTD file
-  column_names <- c("Timestamp", "prDM", "prDE", "Temperature", "c0S/m", "seaTurbMtr", "sbeox0V", "upoly0",
-                    "modError", "Depth", "Salinity", "svCM", "sbeox0Mg/L", "Oxygen.ML.L", "sbox0Mm/Kg", "flag")
+  column_names <- c("1", "2", "3", "4", "5", "6", "7", "8",
+                    "9", "10", "11", "12", "13", "14", "15", "16")
+
+  column_names[as.integer(config_data$ctd_cols$timestamp)] <- "Timestamp"
+  column_names[as.integer(config_data$ctd_cols$temperature)] <- "Temperature"
+  column_names[as.integer(config_data$ctd_cols$depth)] <- "Depth"
+  column_names[as.integer(config_data$ctd_cols$salinity)] <- "Salinity"
+  column_names[as.integer(config_data$ctd_cols$oxygen)] <- "Oxygen.ML.L"
 
   file_conn <- file(ctd_file, open="r")
   line_count <- 0
@@ -58,10 +66,15 @@ read_ctd_data <- function() {
 }
 
 read_nav_data <- function() {
-  nav_folder_path <- paste0(tmp_input_files,"/nav")
-  nav_file_pattern <- paste0(cruise_number, "_", dive_number, ".*", ".csv")
+  nav_folder_path <- paste0(tmp_output_dest, "/nav")
+  nav_file_pattern <- paste0(config_data$cruise_number, "_", dive_number, ".*", ".csv")
   nav_file <- list.files(nav_folder_path, pattern = nav_file_pattern, full.names = TRUE)
-  column_names <- c("DATE", "TIME", "UNIXTIME", "DEPTH", "Alt", "Lat", "Long")
+  column_names <- c("1", "2", "3", "4", "5", "6", "7")
+
+  column_names[as.integer(config_data$tracking_cols$unix_time)] <- "UNIXTIME"
+  column_names[as.integer(config_data$tracking_cols$altitude)] <- "Alt"
+  column_names[as.integer(config_data$tracking_cols$latitude)] <- "Lat"
+  column_names[as.integer(config_data$tracking_cols$longitude)] <- "Long"
 
   nav_data <- read_csv(nav_file,
                        col_names = column_names,
@@ -85,8 +98,8 @@ read_nav_data <- function() {
 # Merge filtered tibbles
 merged_data <- inner_join(read_ctd_data(), read_nav_data(), by="Datetime")
 
-file_name <- paste0(cruise_number, "_", dive_number, "_", dive_start_date, "_ROVDATA.csv")
-output_file_path <- paste0(output_destination_path, "/", file_name)
+file_name <- paste0(config_data$cruise_number, "_", dive_number, "_", dive_start_date, "_ROVDATA.csv")
+output_file_path <- paste0(config_data$output_dir, "/", file_name)
 
 selected_columns <- c("Lat", "Long", "Depth", "Temperature", "Oxygen.ML.L", "Salinity", "Datetime", "Alt")  # Specify the columns you want to select
 new_header_names <- c('Latitude','Longitude','Depth','Temperature','oxygen_ml_per_l', 'Salinity','Date','Alt')  # Specify the new header names
