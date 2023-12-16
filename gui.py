@@ -402,7 +402,7 @@ class Gui(tk.Tk):
         oxygen_frame = tk.Frame(master=self.ctd_columns_frame)
         oxygen_label = tk.Label(
             master=oxygen_frame,
-            text='OXYGEN',
+            text='OXYGEN ML/L',
             font=('Helvetica', '12', 'bold'),
         )
         oxygen_entry = tk.Entry(
