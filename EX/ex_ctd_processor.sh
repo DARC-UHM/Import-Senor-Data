@@ -118,11 +118,11 @@ done
 
 # CLEANUP
 printf "\nRemoving temp files...\n"
-rm -rf "$output_destination_path/$cruise"
+rm -rf "$output_dir/$cruise_number"
 
 printf "$txt_success\nCruise complete!\n$txt_reset"
-printf "\nMerged csv files saved to ${txt_underline}${output_destination_path}${txt_reset}\n\n"
+printf "\nMerged csv files saved to ${txt_underline}${output_dir}${txt_reset}\n\n"
 
-open "$output_destination_path"
+open "$output_dir"
 
 exit 0

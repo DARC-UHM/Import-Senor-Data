@@ -51,7 +51,7 @@ class ConfigFileHandler:
                 'temperature': 4,
                 'depth': 10,
                 'salinity': 11,
-                'oxygen': 13
+                'oxygen': 14
             },
             'tracking_cols': {
                 'unix_time': 3,
