@@ -13,19 +13,18 @@ dive_reports_source=$3
 output_destination_path=$4
 
 # load pretty colors
-export txt_bold=$(tput bold)
-export txt_underline=$(tput sgr 0 1)
-export txt_blue=${txt_bold}$(tput setaf 4)
-export txt_success=${txt_bold}$(tput setaf 2)
-export txt_warn=${txt_bold}$(tput setaf 3)
-export txt_error=${txt_bold}$(tput setaf 1)
-export txt_reset=$(tput sgr0)
+txt_bold=$(tput bold)
+txt_underline=$(tput sgr 0 1)
+txt_success=${txt_bold}$(tput setaf 2)
+txt_warn=${txt_bold}$(tput setaf 3)
+txt_error=${txt_bold}$(tput setaf 1)
+txt_reset=$(tput sgr0)
 
 # OUTPUT - WRITE
 today=$(date +%Y%m%d)
 tmp_output_destination="$output_destination_path/$cruise_number/$today/tmp"
 mkdir -p "$tmp_output_destination"
-cd "NA"
+cd "NA" || exit 1
 
 ## Given a Cruise Number, identify the number of dives in the cruise
 dive_count=`(ls "$dive_reports_source" | grep -e "^H" | wc -l | tr -d " ")`
@@ -83,7 +82,7 @@ done
 # CLEANUP
 printf "\n---------------------------------------------\n"
 printf "\nRemoving temp files...\n"
-rm -rf "$output_destination_path/$cruise_number"
+rm -rf "${output_destination_path:?}/${cruise_number:?}"
 
 printf "$txt_success\nCruise complete!\n$txt_reset"
 printf "\nMerged csv files saved to ${txt_underline}${output_destination_path}${txt_reset}\n\n"
