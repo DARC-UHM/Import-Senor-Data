@@ -53,12 +53,14 @@ class ConfigFileHandler:
                 'salinity': 11,
                 'oxygen': 14
             },
+            # ctd_seconds_from: "2000" = 2000-01-01 00:00:00; "UNIX" = 1970-01-01 00:00:00, "ELAPSED" = dive start time
+            'ctd_seconds_from': '2000',
             'tracking_cols': {
                 'unix_time': 3,
                 'altitude': 5,
                 'latitude': 6,
                 'longitude': 7
-            }
+            },
         }
         self.save_config(self.config)
 

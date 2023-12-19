@@ -10,13 +10,11 @@
 config_file=$1
 
 # load pretty colors
-export txt_bold=$(tput bold)
-export txt_underline=$(tput sgr 0 1)
-export txt_blue=${txt_bold}$(tput setaf 4)
-export txt_success=${txt_bold}$(tput setaf 2)
-export txt_warn=${txt_bold}$(tput setaf 3)
-export txt_error=${txt_bold}$(tput setaf 1)
-export txt_reset=$(tput sgr0)
+txt_bold=$(tput bold)
+txt_underline=$(tput sgr 0 1)
+txt_success=${txt_bold}$(tput setaf 2)
+txt_error=${txt_bold}$(tput setaf 1)
+txt_reset=$(tput sgr0)
 
 read_json() {
     local json_file="$1"
@@ -32,23 +30,15 @@ temp_ctd_dir=$(read_json "$config_file" "ctd_dir")
 temp_tracking_dir=$(read_json "$config_file" "tracking_dir")
 temp_ctd_file_names=$(read_json "$config_file" "ctd_file_names")
 temp_tracking_file_names=$(read_json "$config_file" "tracking_file_names")
-timestamp_column=$(read_json "$config_file" "ctd_cols.timestamp")
-temperature_column=$(read_json "$config_file" "ctd_cols.temperature")
-salinity_column=$(read_json "$config_file" "ctd_cols.salinity")
-oxygen_column=$(read_json "$config_file" "ctd_cols.oxygen")
-unix_time_column=$(read_json "$config_file" "tracking_cols.unix_time")
-altitude_column=$(read_json "$config_file" "tracking_cols.altitude")
-latitude_column=$(read_json "$config_file" "tracking_cols.latitude")
-longitude_column=$(read_json "$config_file" "tracking_cols.longitude")
 
-ctd_dir=$(echo "$(eval echo "$temp_ctd_dir")")
-tracking_dir=$(echo "$(eval echo "$temp_tracking_dir")")
+ctd_dir="$(eval echo "$temp_ctd_dir")"
+tracking_dir="$(eval echo "$temp_tracking_dir")"
 
 # OUTPUT - WRITE
 today=$(date +%Y%m%d)
 tmp_output_destination="$output_dir/$cruise_number/$today/tmp"
 mkdir -p "$tmp_output_destination"
-cd "EX"
+cd "EX" || exit 1
 
 # Given a cruise number, identify the number of dives in the cruise
 dive_count=`(ls "$ctd_dir" | grep "$cruise_number" | wc -l | tr -d " ")`
@@ -65,8 +55,8 @@ dives=($(ls "$ctd_dir"| grep .cnv))
 for((i = 0; i < dive_count; ++i)); do
   num=$((i+1))
   dive=${dives[i]:7:6}
-  ctd_file_names=$(echo "$(eval echo "$temp_ctd_file_names")")
-  tracking_file_names=$(echo "$(eval echo "$temp_tracking_file_names")")
+  ctd_file_names="$(eval echo "$temp_ctd_file_names")"
+  tracking_file_names="$(eval echo "$temp_tracking_file_names")"
 
   printf "\n=============================================\n"
   printf "                    ${txt_bold}${dive}${txt_reset}\n"
@@ -74,15 +64,15 @@ for((i = 0; i < dive_count; ++i)); do
 
   # GRAB a COPY of CTD CNV FILES LOCALLY
   ctd_cnv_file=($(ls "$ctd_dir" | grep "$ctd_file_names"))
-  ctd_cnv_file_path="${ctd_dir}/${ctd_cnv_file}"
-  if [[ ! -f "$tmp_output_destination/$ctd_cnv_file" ]]; then
+  ctd_cnv_file_path="${ctd_dir}/${ctd_cnv_file[0]}"  # only expect one file per dive
+  if [[ ! -f "$tmp_output_destination/${ctd_cnv_file[0]}" ]]; then
     mkdir -p "$tmp_output_destination/ctd" && cp "$ctd_cnv_file_path" "$tmp_output_destination/ctd"
   else
     echo "Skip copying file over: $ctd_cnv_file_path"
   fi
 
   nav_csv_file=($(ls "$tracking_dir" | grep "$tracking_file_names"))
-  nav_csv_file_path="${tracking_dir}/${nav_csv_file}"
+  nav_csv_file_path="${tracking_dir}/${nav_csv_file[0]}"  # only expect one file per dive
   if [[ ! -f "$tmp_output_destination/$nav_csv_file_path" ]]; then
     mkdir -p "$tmp_output_destination/nav" && cp "$nav_csv_file_path" "$tmp_output_destination/nav"
   else
@@ -118,7 +108,7 @@ done
 
 # CLEANUP
 printf "\nRemoving temp files...\n"
-rm -rf "$output_dir/$cruise_number"
+rm -rf "${output_dir:?}/${cruise_number:?}"
 
 printf "$txt_success\nCruise complete!\n$txt_reset"
 printf "\nMerged csv files saved to ${txt_underline}${output_dir}${txt_reset}\n\n"

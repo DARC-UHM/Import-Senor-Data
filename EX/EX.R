@@ -19,10 +19,6 @@ tmp_output_dest <- args[4]
 
 config_data <- fromJSON(config_file_path)
 
-format_time <- function(timestamp) {
-  return (format(as.POSIXct(timestamp, format = "%Y-%m-%dT%H:%M:%S"), format = "%Y%m%dT%H%M%SZ"))
-}
-
 read_ctd_data <- function() {
   ctd_folder_path <- paste0(tmp_output_dest, "/ctd")
   ctd_file_pattern <- paste0(config_data$cruise_number, "_", dive_number, ".*", ".cnv")
@@ -40,10 +36,16 @@ read_ctd_data <- function() {
   file_conn <- file(ctd_file, open="r")
   line_count <- 0
 
-  # read thorough file until "*END*" is found
+  system_start_time <- NULL
+
+  # grab the system start time, then read thorough file until "*END*" is found
   while (TRUE) {
       line <- readLines(file_conn, n = 1)
       line_count <- line_count + 1
+      if (grepl("* System UTC = ", line)) {
+          raw_start_time <- strsplit(line, " = ")[[1]][2]
+          system_start_time <- as.POSIXct(raw_start_time, format = "%b %d %Y %H:%M:%S", tz = "UTC")
+      }
       if (grepl("*END*", line)) {
           break
       }
@@ -55,7 +57,19 @@ read_ctd_data <- function() {
   pruned_seconds <- all_ctd_data[!duplicated(all_ctd_data[, 1]), ]  # Only grab one row for each second
 
   # convert timestamp
-  base_time <- as.POSIXct("2000-01-01 00:00:00", tz = "UTC")
+  seconds_from <- config_data$ctd_seconds_from
+  if (seconds_from == "2000") {
+    base_time <- as.POSIXct("2000-01-01 00:00:00", tz = "UTC")
+  } else if (seconds_from == "UNIX") {
+    base_time <- as.POSIXct("1970-01-01 00:00:00", tz = "UTC")
+  } else if (seconds_from == "ELAPSED") {
+    if (system_start_time == NULL) {
+      stop("System start time not found")
+    }
+    base_time <- system_start_time
+  } else {
+    stop("Invalid ctd_seconds_from value")
+  }
   pruned_seconds$datetime_converted <- base_time + as.numeric(pruned_seconds[,1])
   pruned_seconds$Datetime <- format(pruned_seconds$datetime_converted, "%Y%m%dT%H%M%SZ")
 
