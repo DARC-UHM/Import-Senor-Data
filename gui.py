@@ -58,6 +58,7 @@ class Gui(tk.Tk):
 
         self.timestamp_col = tk.StringVar(value=self.config['ctd_cols']['timestamp'])
         self.temperature_col = tk.StringVar(value=self.config['ctd_cols']['temperature'])
+        self.ctd_seconds_from = self.config['ctd_seconds_from']
         self.depth_col = tk.StringVar(value=self.config['ctd_cols']['depth'])
         self.salinity_col = tk.StringVar(value=self.config['ctd_cols']['salinity'])
         self.oxygen_col = tk.StringVar(value=self.config['ctd_cols']['oxygen'])
@@ -167,6 +168,7 @@ class Gui(tk.Tk):
                 'salinity': self.salinity_col.get(),
                 'oxygen': self.oxygen_col.get(),
             },
+            'ctd_seconds_from': self.ctd_seconds_from,
             'tracking_cols': {
                 'unix_time': self.unix_time_col.get(),
                 'altitude': self.altitude_col.get(),
@@ -376,6 +378,7 @@ class Gui(tk.Tk):
             state='readonly',
         )
         seconds_from_combobox.current(1)
+        seconds_from_combobox.bind('<<ComboboxSelected>>', lambda event: self.set_ctd_seconds_from(seconds_from_combobox.get()))
 
         temperature_frame = tk.Frame(master=self.ctd_columns_frame)
         temperature_label = tk.Label(
@@ -527,6 +530,14 @@ class Gui(tk.Tk):
 
         save_button.pack(pady=(5, 0))
         status.pack(pady=(0, 20))
+
+    def set_ctd_seconds_from(self, _type):
+        if _type == 'Unix Epoch':
+            self.ctd_seconds_from = 'UNIX'
+        elif _type == 'Jan 1 2000':
+            self.ctd_seconds_from = '2000'
+        else:
+            self.ctd_seconds_from = 'ELAPSED'
 
     def set_column_widgets(self, _type):
         if _type == 'CTD':
