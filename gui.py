@@ -363,6 +363,20 @@ class Gui(tk.Tk):
             textvariable=self.timestamp_col,
         )
 
+        seconds_from_frame = tk.Frame(master=self.ctd_columns_frame)
+        seconds_from_label = tk.Label(
+            master=seconds_from_frame,
+            text='    SECONDS FROM...',
+            font=('Helvetica', '11', 'bold'),
+        )
+        seconds_from_combobox = ttk.Combobox(
+            master=seconds_from_frame,
+            values=['Unix Epoch', 'Jan 1 2000', 'Dive Start'],
+            width=8,
+            state='readonly',
+        )
+        seconds_from_combobox.current(1)
+
         temperature_frame = tk.Frame(master=self.ctd_columns_frame)
         temperature_label = tk.Label(
             master=temperature_frame,
@@ -501,6 +515,7 @@ class Gui(tk.Tk):
 
         self.ctd_columns_frame.pack(fill=tk.X, anchor='s', ipady=5)
         self.pack_column_frame(timestamp_frame, timestamp_label, timestamp_entry, 1)
+        self.pack_column_frame(seconds_from_frame, seconds_from_label, seconds_from_combobox, 0)
         self.pack_column_frame(temperature_frame, temperature_label, temperature_entry, 0)
         self.pack_column_frame(depth_frame, depth_label, depth_entry, 0)
         self.pack_column_frame(salinity_frame, salinity_label, salinity_entry, 0)
@@ -524,6 +539,7 @@ class Gui(tk.Tk):
             self.tracking_columns_frame.pack(pady=5, fill=tk.X)
 
     def pack_column_frame(self, frame, label, entry, pos):
+        # pos is the position in the list (1 = first item in list, 0 = middle, -1 = last item in list)
         match pos:
             case 1: frame.pack(fill=tk.X, padx=10, pady=(5, 0))
             case 0: frame.pack(fill=tk.X, padx=10)
