@@ -377,7 +377,12 @@ class Gui(tk.Tk):
             width=8,
             state='readonly',
         )
-        seconds_from_combobox.current(1)
+        seconds_index = 0
+        if self.ctd_seconds_from == '2000':
+            seconds_index = 1
+        elif self.ctd_seconds_from == 'ELAPSED':
+            seconds_index = 2
+        seconds_from_combobox.current(seconds_index)
         seconds_from_combobox.bind('<<ComboboxSelected>>', lambda event: self.set_ctd_seconds_from(seconds_from_combobox.get()))
 
         temperature_frame = tk.Frame(master=self.ctd_columns_frame)

@@ -63,7 +63,7 @@ read_ctd_data <- function() {
   } else if (seconds_from == "UNIX") {
     base_time <- as.POSIXct("1970-01-01 00:00:00", tz = "UTC")
   } else if (seconds_from == "ELAPSED") {
-    if (system_start_time == NULL) {
+    if (is_null(system_start_time)) {
       stop("System start time not found")
     }
     base_time <- system_start_time
