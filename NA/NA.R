@@ -80,7 +80,6 @@ read_o2s_nav_data <- function() {
                                       Timestamp = col_datetime(format = "%Y-%m-%dT%H:%M:%S")),
                        show_col_types = FALSE)
 
-
   # Apply the function to the column using mutate()
   selected_ctd_data <- o2s_data %>% mutate(Timestamp = format_time(Timestamp)) %>% arrange(Timestamp)
   return(selected_ctd_data)
@@ -93,7 +92,8 @@ read_dat_data <- function() {
   # Read and combine the files into a tibble
   # 2019/08/30 06:45:17.914 0.000
   column_names <- c("Date", "Time", "Alt")
-  dat_data <- read_delim(dat_files, col_names=column_names,
+  dat_data <- read_delim(dat_files,
+                         col_names=column_names,
                          delim = " ",
                          col_types = cols(
                            Date = col_date(format = "%Y/%m/%d"),
@@ -115,17 +115,11 @@ invisible(ctd_data <- read_ctd_nav_data())
 invisible(o2s_data <- read_o2s_nav_data())
 invisible(dat_data <- read_dat_data())
 
-# Find intersection of timestamps
-intersection <- Reduce(intersect, list(ctd_data$Timestamp, o2s_data$Timestamp, dat_data$Timestamp))
-
-# Filter tibbles based on intersection
-filtered_ctd_data <- ctd_data %>% filter(Timestamp %in% intersection)
-filtered_o2s_data <- o2s_data %>% filter(Timestamp %in% intersection)
-filtered_dat_data <- dat_data %>% filter(Timestamp %in% intersection)
-
 # Merge filtered tibbles
-merged_data <- inner_join(filtered_ctd_data, filtered_o2s_data, by = "Timestamp") %>%
-                  inner_join(filtered_dat_data, by = "Timestamp")
+merged_data <- left_join(ctd_data, o2s_data, by = "Timestamp") %>% left_join(dat_data, by = "Timestamp")
+
+# Replace alt NAs with empty strings
+merged_data <- merged_data %>% mutate(across(.cols = c("Alt"), .fns = ~ifelse(is.na(.), "", .)))
 
 # print("START Oxygen Correction")
 calculate_oxygen <- function(calculate_oxygen_mgperliter, calculate_oxygen_microMolar, calculate_oxygen_mlperliter, merged_data) {
